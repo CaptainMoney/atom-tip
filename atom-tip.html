@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tip 1 ATOM</title>
+    <script src="https://unpkg.com/@cosmjs/proto-signing@0.32.1/dist/bundle.min.js"></script>
+    <script src="https://unpkg.com/@cosmjs/stargate@0.32.1/dist/bundle.min.js"></script>
+    <script>
+        // Ensure SigningStargateClient is available globally
+        window.SigningStargateClient = cosmjs.stargate.SigningStargateClient;
+    </script>
+</head>
+<body>
+    <button id="tipButton">Tip 1 ATOM</button>
+
+    <script>
+        const tipButton = document.getElementById('tipButton');
+        const recipientAddress = 'cosmos1mk2yasfjljrvrxrjwj5823xh6lctkjc9tua6nx';
+
+        tipButton.addEventListener('click', async () => {
+            if (!window.keplr) {
+                alert("Please install Keplr extension");
+                return;
+            }
+
+            try {
+                // Enable Keplr
+                await window.keplr.enable("cosmoshub-4");
+
+                // Get the offlineSigner
+                const offlineSigner = window.keplr.getOfflineSigner("cosmoshub-4");
+
+                // Create the client
+                const client = await window.SigningStargateClient.connectWithSigner(
+                    "https://rpc.cosmoshub.strange.love",
+                    offlineSigner
+                );
+
+                // Get the user's address
+                const accounts = await offlineSigner.getAccounts();
+                const senderAddress = accounts[0].address;
+
+                // Prepare the transaction
+                const amount = {
+                    denom: "uatom",
+                    amount: "1000000", // 1 ATOM = 1,000,000 uatom
+                };
+
+                const fee = {
+                    amount: [{
+                        denom: "uatom",
+                        amount: "5000",
+                    }],
+                    gas: "200000",
+                };
+
+                // Send the transaction
+                const result = await client.sendTokens(senderAddress, recipientAddress, [amount], fee, "Tip from cosmosnews.zone");
+
+                alert(`Transaction successful! Hash: ${result.transactionHash}`);
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Transaction failed. See console for details.");
+            }
+        });
+    </script>
+</body>
+</html>
